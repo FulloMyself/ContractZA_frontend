@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.VITE_BASE_PATH || '/contracts-zar/'
+  base: process.env.VITE_BASE_PATH || '/ContractZA_frontend/'
 });
