@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, CheckCircle2, Copy, Download, FileText, Plus, Search, Send, ShieldCheck } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import SignaturePad from '../components/SignaturePad';
+import { useAuth } from '../context/AuthContext';
 
 const templates = {
   custom: '',
@@ -65,9 +66,10 @@ export function ContractsPage() {
     <ErrorAlert error={error} />
     <section className="panel">
       {items.length ? <>
-        <div className="table-scroll"><table><thead><tr><th>Contract</th><th>Status</th><th>Template</th><th>Last updated</th><th /></tr></thead>
+        <div className="table-scroll"><table><thead><tr><th>Contract</th><th>Direction</th><th>Status</th><th>Template</th><th>Last updated</th><th /></tr></thead>
           <tbody>{items.map((item) => <tr key={item._id}>
             <td><Link className="table-title" to={`/contracts/${item._id}`}>{item.title}</Link></td>
+            <td>{item.isOwner ? 'Sent' : 'Received'}</td>
             <td><span className={statusClass(item.status)}>{item.status}</span></td>
             <td>{item.template?.replaceAll('-', ' ') || 'Custom'}</td>
             <td>{new Date(item.updatedAt).toLocaleDateString('en-ZA')}</td>
@@ -106,6 +108,7 @@ export function ContractFormPage() {
 export function ContractDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [contract, setContract] = useState(null);
   const [error, setError] = useState('');
   const [invite, setInvite] = useState({ name: '', email: '' });
@@ -114,7 +117,11 @@ export function ContractDetailPage() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   async function load() {
-    try { const { data } = await api.get(`/contracts/${id}`); setContract(data.contract); }
+    try {
+      const { data } = await api.get(`/contracts/${id}`);
+      setContract(data.contract);
+      setSignName(data.contract.parties.find((party) => party.email === user.email)?.name || '');
+    }
     catch (failure) { setError(errorMessage(failure)); }
   }
   useEffect(() => { load(); }, [id]);
@@ -126,7 +133,13 @@ export function ContractDetailPage() {
   }
   async function sign() {
     setBusy(true); setError(''); setNotice('');
-    try { const { data } = await api.post(`/contracts/${id}/sign`, { name: signName, signature }); setContract(data.contract); setNotice('Your signature has been recorded.'); setSignature(''); }
+    try {
+      const endpoint = contract.isOwner ? `/contracts/${id}/sign` : `/contracts/${id}/sign-as-counterparty`;
+      const { data } = await api.post(endpoint, { name: signName, signature });
+      setContract(data.contract);
+      setNotice('Your signature has been recorded.');
+      setSignature('');
+    }
     catch (failure) { setError(errorMessage(failure)); }
     finally { setBusy(false); }
   }
@@ -159,6 +172,9 @@ export function ContractDetailPage() {
   }
   if (!contract) return <><PageTitle eyebrow="AGREEMENT" title={error ? 'Contract unavailable' : 'Loading contract…'} /><ErrorAlert error={error} /></>;
   const ownerSigned = contract.signatures.some((item) => item.email === contract.parties.find((party) => party.role === 'owner')?.email);
+  const currentParty = contract.parties.find((party) => party.email === user.email);
+  const canSign = contract.status === 'pending' && !currentParty?.signedAt && !currentParty?.declinedAt
+    && (contract.isOwner ? !ownerSigned : currentParty?.role === 'counterparty');
   return <>
     <Link className="back-link" to="/contracts"><ArrowLeft size={16} /> All contracts</Link>
     <div className="detail-heading">
@@ -172,15 +188,15 @@ export function ContractDetailPage() {
     <ErrorAlert error={error} />
     {notice && <div className="alert success">{notice}</div>}
     <div className="detail-actions">
-      {contract.status === 'draft' && <Link className="button secondary" to={`/contracts/${id}/edit`}>Edit draft</Link>}
-      <button className="button secondary" onClick={duplicate} disabled={busy}><Copy size={16} /> Duplicate</button>
+      {contract.isOwner && contract.status === 'draft' && <Link className="button secondary" to={`/contracts/${id}/edit`}>Edit draft</Link>}
+      {contract.isOwner && <button className="button secondary" onClick={duplicate} disabled={busy}><Copy size={16} /> Duplicate</button>}
       {contract.status === 'signed' && <button className="button secondary" onClick={downloadPdf}><Download size={16} /> Download PDF</button>}
-      {['draft', 'pending', 'expired'].includes(contract.status) && <button className="button danger-outline" onClick={cancel}>Cancel contract</button>}
-      {['draft', 'cancelled'].includes(contract.status) && <button className="button danger-outline" onClick={remove}>Delete</button>}
+      {contract.isOwner && ['draft', 'pending', 'expired'].includes(contract.status) && <button className="button danger-outline" onClick={cancel}>Cancel contract</button>}
+      {contract.isOwner && ['draft', 'cancelled'].includes(contract.status) && <button className="button danger-outline" onClick={remove}>Delete</button>}
     </div>
     <div className="detail-grid">
       <section className="panel document-panel">
-        <div className="panel-heading"><div><h2>Agreement text</h2><p>Review the document before inviting a signer</p></div></div>
+        <div className="panel-heading"><div><h2>Agreement text</h2><p>Review the terms and signing status</p></div></div>
         <article className="contract-body">{contract.body}</article>
       </section>
       <aside className="detail-aside">
@@ -188,17 +204,17 @@ export function ContractDetailPage() {
           <h2>Signatories</h2>
           <div className="party-list">{contract.parties.map((party) => <div className="party-row" key={party.email}>
             <div className="avatar">{party.name.split(' ').map((part) => part[0]).slice(0, 2).join('')}</div>
-            <div className="party-info"><strong>{party.name}</strong><small>{party.email}{party.role === 'owner' ? ' · You' : ''}</small></div>
+            <div className="party-info"><strong>{party.name}</strong><small>{party.email}{party.email === user.email ? ' · You' : ''}</small></div>
             <span className={`party-state ${party.signedAt ? 'complete' : ''}`}>{party.signedAt ? <CheckCircle2 size={16} /> : 'Pending'}</span>
           </div>)}</div>
-          {['draft', 'pending', 'expired'].includes(contract.status) && <form className="invite-form" onSubmit={sendInvite}>
+          {contract.isOwner && ['draft', 'pending', 'expired'].includes(contract.status) && <form className="invite-form" onSubmit={sendInvite}>
             <h3>Invite a signer</h3>
             <label>Full name<input required value={invite.name} onChange={(e) => setInvite({ ...invite, name: e.target.value })} /></label>
             <label>Email address<input required type="email" value={invite.email} onChange={(e) => setInvite({ ...invite, email: e.target.value })} /></label>
             <button className="button primary full" disabled={busy}><Send size={16} /> Send invitation</button>
           </form>}
         </section>
-        {contract.status === 'pending' && !ownerSigned && <section className="panel">
+        {canSign && <section className="panel">
           <h2>Your signature</h2><p className="muted">Sign to complete your side of the agreement.</p>
           <label className="field-label">Full legal name<input value={signName} onChange={(e) => setSignName(e.target.value)} /></label>
           <SignaturePad onChange={setSignature} />

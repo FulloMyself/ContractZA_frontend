@@ -18,26 +18,31 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [values, setValues] = useState({ email: '', password: '' });
+  const returnTo = /^\/sign\/[a-f\d]{64}$/i.test(location.state?.returnTo || '') ? location.state.returnTo : '';
+  const invitedEmail = location.state?.invitedEmail || '';
+  const [values, setValues] = useState({ email: invitedEmail, password: '' });
   const [error, setError] = useState('');
   const [notice, setNotice] = useState(location.state?.message || '');
   const [busy, setBusy] = useState(false);
   async function submit(event) {
     event.preventDefault(); setError(''); setNotice(''); setBusy(true);
-    try { const user = await login(values.email, values.password); navigate(user.role === 'admin' ? '/admin' : '/dashboard'); }
+    try { const user = await login(values.email, values.password); navigate(user.role === 'admin' ? '/admin' : returnTo || '/dashboard'); }
     catch (failure) { setError(errorMessage(failure)); }
     finally { setBusy(false); }
   }
   async function resendVerification() {
     setError(''); setNotice('');
-    try { const { data } = await api.post('/auth/resend-verification', { email: values.email }); setNotice(data.message); }
+    try { const { data } = await api.post('/auth/resend-verification', { email: values.email, returnTo: returnTo || undefined }); setNotice(data.message); }
     catch (failure) { setError(errorMessage(failure)); }
   }
-  return <AuthShell eyebrow="WELCOME BACK" title="Sign in to your account" subtitle="Your agreements are right where you left them."><form className="form-stack" onSubmit={submit}><Alert>{error}</Alert><Alert success>{notice}</Alert><label>Email address<input required type="email" autoComplete="email" value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} /></label><label>Password<input required type="password" autoComplete="current-password" value={values.password} onChange={(e) => setValues({ ...values, password: e.target.value })} /></label><div className="form-aside"><button type="button" className="text-button" onClick={resendVerification}>Resend verification email</button><Link to="/forgot-password">Forgot password?</Link></div><button className="button primary full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'} <ArrowRight size={17} /></button></form><p className="auth-switch">New to Contracts ZAR? <Link to="/register">Create an account</Link></p></AuthShell>;
+  return <AuthShell eyebrow="WELCOME BACK" title="Sign in to your account" subtitle="Your agreements are right where you left them."><form className="form-stack" onSubmit={submit}><Alert>{error}</Alert><Alert success>{notice}</Alert><label>Email address<input required type="email" autoComplete="email" value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} /></label><label>Password<input required type="password" autoComplete="current-password" value={values.password} onChange={(e) => setValues({ ...values, password: e.target.value })} /></label><div className="form-aside"><button type="button" className="text-button" onClick={resendVerification}>Resend verification email</button><Link to="/forgot-password">Forgot password?</Link></div><button className="button primary full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'} <ArrowRight size={17} /></button></form><p className="auth-switch">New to Contracts ZAR? <Link to="/register" state={{ returnTo, invitedEmail }}>Create an account</Link></p></AuthShell>;
 }
 
 export function RegisterPage() {
-  const [values, setValues] = useState({ firstName: '', lastName: '', email: '', idNumber: '', password: '' });
+  const location = useLocation();
+  const returnTo = /^\/sign\/[a-f\d]{64}$/i.test(location.state?.returnTo || '') ? location.state.returnTo : '';
+  const invitedEmail = location.state?.invitedEmail || '';
+  const [values, setValues] = useState({ firstName: '', lastName: '', email: invitedEmail, idNumber: '', password: '' });
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -46,11 +51,11 @@ export function RegisterPage() {
     event.preventDefault(); setError('');
     if (idValidation && !idValidation.valid) { setError(idValidation.reason); return; }
     setBusy(true);
-    try { await api.post('/auth/register', values); setDone(true); }
+    try { await api.post('/auth/register', { ...values, returnTo: returnTo || undefined }); setDone(true); }
     catch (failure) { setError(errorMessage(failure)); }
     finally { setBusy(false); }
   }
-  return <AuthShell eyebrow="GET STARTED" title={done ? 'Check your inbox' : 'Create your account'} subtitle={done ? 'We sent you a verification link to activate your account.' : 'A secure home for the agreements you care about.'}>{done ? <div className="success-card"><CheckCircle2 size={30} /><p>Your account is registered. Follow the link in your email, then sign in.</p><Link className="button primary full" to="/login">Go to sign in</Link></div> : <form className="form-stack" onSubmit={submit}><Alert>{error}</Alert><div className="form-grid"><label>First name(s)<input required maxLength="80" autoComplete="given-name" value={values.firstName} onChange={(e) => setValues({ ...values, firstName: e.target.value })} /></label><label>Surname<input required maxLength="80" autoComplete="family-name" value={values.lastName} onChange={(e) => setValues({ ...values, lastName: e.target.value })} /></label></div><label>Email address<input required type="email" autoComplete="email" value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} /></label><label>South African ID number<input required inputMode="numeric" pattern="[0-9]{13}" maxLength="13" autoComplete="off" value={values.idNumber} onChange={(e) => setValues({ ...values, idNumber: e.target.value.replace(/\D/g, '') })} />{idValidation && <small className={idValidation.valid ? 'field-valid' : 'field-error'}>{idValidation.valid ? 'ID number format looks valid.' : idValidation.reason}</small>}{!idValidation && <small>13 digits. Used to confirm your date of birth and protect account uniqueness.</small>}</label><label>Password<input required type="password" minLength="10" autoComplete="new-password" value={values.password} onChange={(e) => setValues({ ...values, password: e.target.value })} /><small>Use at least 10 characters.</small></label><p className="legal-note">By creating an account, you agree to use electronic signatures responsibly. Some documents require formal in-person or advanced electronic signatures.</p><button className="button primary full" disabled={busy}>{busy ? 'Creating account…' : 'Create account'} <ArrowRight size={17} /></button></form>}<p className="auth-switch">Already have an account? <Link to="/login">Sign in</Link></p></AuthShell>;
+  return <AuthShell eyebrow="GET STARTED" title={done ? 'Check your inbox' : 'Create your account'} subtitle={done ? 'We sent you a verification link to activate your account.' : 'A secure home for the agreements you care about.'}>{done ? <div className="success-card"><CheckCircle2 size={30} /><p>Your account is registered. Follow the link in your email, then sign in.</p><Link className="button primary full" to="/login" state={{ returnTo }}>Go to sign in</Link></div> : <form className="form-stack" onSubmit={submit}><Alert>{error}</Alert><div className="form-grid"><label>First name(s)<input required maxLength="80" autoComplete="given-name" value={values.firstName} onChange={(e) => setValues({ ...values, firstName: e.target.value })} /></label><label>Surname<input required maxLength="80" autoComplete="family-name" value={values.lastName} onChange={(e) => setValues({ ...values, lastName: e.target.value })} /></label></div><label>Email address<input required type="email" autoComplete="email" readOnly={Boolean(invitedEmail)} value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} />{invitedEmail && <small>Use the email address that received the signing invitation.</small>}</label><label>South African ID number<input required inputMode="numeric" pattern="[0-9]{13}" maxLength="13" autoComplete="off" value={values.idNumber} onChange={(e) => setValues({ ...values, idNumber: e.target.value.replace(/\D/g, '') })} />{idValidation && <small className={idValidation.valid ? 'field-valid' : 'field-error'}>{idValidation.valid ? 'ID number format looks valid.' : idValidation.reason}</small>}{!idValidation && <small>13 digits. Used to confirm your date of birth and protect account uniqueness.</small>}</label><label>Password<input required type="password" minLength="10" autoComplete="new-password" value={values.password} onChange={(e) => setValues({ ...values, password: e.target.value })} /><small>Use at least 10 characters.</small></label><p className="legal-note">By creating an account, you agree to use electronic signatures responsibly. Some documents require formal in-person or advanced electronic signatures.</p><button className="button primary full" disabled={busy}>{busy ? 'Creating account…' : 'Create account'} <ArrowRight size={17} /></button></form>}<p className="auth-switch">Already have an account? <Link to="/login" state={{ returnTo, invitedEmail }}>Sign in</Link></p></AuthShell>;
 }
 
 export function ForgotPasswordPage() {
@@ -72,6 +77,8 @@ export function ResetPasswordPage() {
 
 export function VerifyEmailPage() {
   const [params] = useSearchParams();
+  const requestedReturnTo = params.get('returnTo') || '';
+  const returnTo = /^\/sign\/[a-f\d]{64}$/i.test(requestedReturnTo) ? requestedReturnTo : '';
   const started = useRef(false);
   const [state, setState] = useState({ loading: true, message: '', error: '' });
   useEffect(() => {
@@ -79,5 +86,5 @@ export function VerifyEmailPage() {
     started.current = true;
     api.get('/auth/verify-email', { params: { token: params.get('token') } }).then(({ data }) => setState({ loading: false, message: data.message })).catch((failure) => setState({ loading: false, error: errorMessage(failure) }));
   }, [params]);
-  return <AuthShell eyebrow="EMAIL VERIFICATION" title={state.loading ? 'Verifying your email' : state.message ? 'You’re all set' : 'Verification link unavailable'} subtitle="Activating your Contracts ZAR account."><Alert>{state.error}</Alert><Alert success>{state.message}</Alert>{state.loading ? <div className="loading-inline"><span className="spinner" /> Please wait…</div> : <Link className="button primary full" to="/login">Continue to sign in <ArrowRight size={17} /></Link>}</AuthShell>;
+  return <AuthShell eyebrow="EMAIL VERIFICATION" title={state.loading ? 'Verifying your email' : state.message ? 'You’re all set' : 'Verification link unavailable'} subtitle="Activating your Contracts ZAR account."><Alert>{state.error}</Alert><Alert success>{state.message}</Alert>{state.loading ? <div className="loading-inline"><span className="spinner" /> Please wait…</div> : <Link className="button primary full" to="/login" state={{ returnTo }}>Continue to sign in <ArrowRight size={17} /></Link>}</AuthShell>;
 }
