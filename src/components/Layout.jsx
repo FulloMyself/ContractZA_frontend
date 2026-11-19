@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FileText, LayoutDashboard, LogOut, Settings, Shield, Plus, Menu, X } from 'lucide-react';
+import { FileText, LayoutDashboard, LogOut, Settings, Shield, Plus, Menu, X, MessageSquareWarning } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,8 +12,8 @@ export default function Layout() {
     navigate('/login');
   }
   const links = user?.role === 'admin'
-    ? [{ to: '/admin', label: 'Overview', icon: LayoutDashboard }, { to: '/admin/users', label: 'Users', icon: Shield }, { to: '/admin/audit', label: 'Audit log', icon: FileText }, { to: '/profile', label: 'Profile settings', icon: Settings }]
-    : [{ to: '/dashboard', label: 'Overview', icon: LayoutDashboard }, { to: '/contracts', label: 'My contracts', icon: FileText }, { to: '/contracts/new', label: 'New contract', icon: Plus }, { to: '/profile', label: 'Profile settings', icon: Settings }];
+    ? [{ to: '/admin', label: 'Overview', icon: LayoutDashboard }, { to: '/admin/complaints', label: 'Complaints', icon: MessageSquareWarning }, { to: '/admin/users', label: 'Users', icon: Shield }, { to: '/admin/audit', label: 'Audit log', icon: FileText }, { to: '/profile', label: 'Profile settings', icon: Settings }]
+    : [{ to: '/dashboard', label: 'Overview', icon: LayoutDashboard }, { to: '/contracts', label: 'My contracts', icon: FileText }, { to: '/complaints', label: 'Complaints', icon: MessageSquareWarning }, { to: '/contracts/new', label: 'New contract', icon: Plus }, { to: '/profile', label: 'Profile settings', icon: Settings }];
   return (
     <div className="app-shell">
       <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>

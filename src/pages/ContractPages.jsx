@@ -5,6 +5,7 @@ import api, { errorMessage } from '../api/client';
 import SignaturePad from '../components/SignaturePad';
 import { useAuth } from '../context/AuthContext';
 import { contractTemplateGroups, contractTemplates } from '../data/contractTemplates';
+import { complaintCategories } from '../data/complaints';
 const statusClass = (status) => `status status-${status}`;
 function PageTitle({ eyebrow, title, action }) {
   return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1></div>{action}</div>;
@@ -116,6 +117,8 @@ export function ContractDetailPage() {
   const [invite, setInvite] = useState({ name: '', email: '' });
   const [signature, setSignature] = useState('');
   const [signName, setSignName] = useState('');
+  const [complaintOpen, setComplaintOpen] = useState(false);
+  const [complaint, setComplaint] = useState({ respondentEmail: '', category: 'other', subject: '', description: '' });
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   async function load() {
@@ -172,6 +175,16 @@ export function ContractDetailPage() {
       URL.revokeObjectURL(href);
     } catch (failure) { setError(errorMessage(failure)); }
   }
+  async function submitComplaint(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const { data } = await api.post('/complaints', { ...complaint, contractId: id });
+      navigate(`/complaints/${data.case._id}`);
+    } catch (failure) { setError(errorMessage(failure)); }
+    finally { setBusy(false); }
+  }
   if (!contract) return <><PageTitle eyebrow="AGREEMENT" title={error ? 'Contract unavailable' : 'Loading contract…'} /><ErrorAlert error={error} /></>;
   const ownerSigned = contract.signatures.some((item) => item.email === contract.parties.find((party) => party.role === 'owner')?.email);
   const currentParty = contract.parties.find((party) => party.email === user.email);
@@ -193,9 +206,18 @@ export function ContractDetailPage() {
       {contract.isOwner && contract.status === 'draft' && <Link className="button secondary" to={`/contracts/${id}/edit`}>Edit draft</Link>}
       {contract.isOwner && <button className="button secondary" onClick={duplicate} disabled={busy}><Copy size={16} /> Duplicate</button>}
       {contract.status === 'signed' && <button className="button secondary" onClick={downloadPdf}><Download size={16} /> Download PDF</button>}
+      {contract.parties.some((party) => party.email !== user.email) && <button className="button secondary" onClick={() => setComplaintOpen(!complaintOpen)}>Report a concern</button>}
       {contract.isOwner && ['draft', 'pending', 'expired'].includes(contract.status) && <button className="button danger-outline" onClick={cancel}>Cancel contract</button>}
       {contract.isOwner && ['draft', 'cancelled'].includes(contract.status) && <button className="button danger-outline" onClick={remove}>Delete</button>}
     </div>
+    {complaintOpen && <form className="panel complaint-report-form" onSubmit={submitComplaint}>
+      <div><h2>Report a contract concern</h2><p className="muted">Describe the issue factually. The platform records the report and supports communication; it does not determine legal liability. Do not include passwords, ID numbers or unnecessary sensitive information.</p></div>
+      <label>Other party<select required value={complaint.respondentEmail} onChange={(event) => setComplaint({ ...complaint, respondentEmail: event.target.value })}><option value="">Select a party</option>{contract.parties.filter((party) => party.email !== user.email).map((party) => <option key={party.email} value={party.email}>{party.name} ({party.email})</option>)}</select></label>
+      <label>Issue category<select value={complaint.category} onChange={(event) => setComplaint({ ...complaint, category: event.target.value })}>{complaintCategories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}</select></label>
+      <label>Short subject<input required minLength="3" maxLength="160" value={complaint.subject} onChange={(event) => setComplaint({ ...complaint, subject: event.target.value })} /></label>
+      <label>What happened?<textarea required minLength="20" maxLength="5000" rows="5" value={complaint.description} onChange={(event) => setComplaint({ ...complaint, description: event.target.value })} placeholder="Summarize the concern, relevant dates and what response you are seeking." /></label>
+      <div className="complaint-form-actions"><button type="button" className="button secondary" onClick={() => setComplaintOpen(false)}>Cancel</button><button className="button primary" disabled={busy || !complaint.respondentEmail}>{busy ? 'Submitting…' : 'Submit complaint'}</button></div>
+    </form>}
     <div className="detail-grid">
       <section className="panel document-panel">
         <div className="panel-heading"><div><h2>Agreement text</h2><p>Review the terms and signing status</p></div></div>

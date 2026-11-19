@@ -6,6 +6,7 @@ import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage, VerifyE
 import LandingPage from './pages/LandingPage';
 import PublicSignPage from './pages/PublicSignPage';
 import { DashboardPage, ContractsPage, ContractFormPage, ContractDetailPage } from './pages/ContractPages';
+import { UserComplaintsPage, AdminComplaintsPage } from './pages/ComplaintsPage';
 import ProfilePage from './pages/ProfilePage';
 import { AdminDashboardPage, AdminUsersPage, AdminAuditPage } from './pages/AdminPages';
 
@@ -27,11 +28,15 @@ function RouterContent() {
           <Route path="/contracts/new" element={<ContractFormPage />} />
           <Route path="/contracts/:id" element={<ContractDetailPage />} />
           <Route path="/contracts/:id/edit" element={<ContractFormPage />} />
+          <Route path="/complaints" element={<UserComplaintsPage />} />
+          <Route path="/complaints/:id" element={<UserComplaintsPage />} />
         </Route>
         <Route element={<RoleRoute role="admin" />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/audit" element={<AdminAuditPage />} />
+          <Route path="/admin/complaints" element={<AdminComplaintsPage />} />
+          <Route path="/admin/complaints/:id" element={<AdminComplaintsPage />} />
         </Route>
       </Route>
     </Route>
