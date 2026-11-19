@@ -4,13 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Copy, Download, FileText, Plus, Se
 import api, { errorMessage } from '../api/client';
 import SignaturePad from '../components/SignaturePad';
 import { useAuth } from '../context/AuthContext';
-
-const templates = {
-  custom: '',
-  'service-agreement': `SERVICE AGREEMENT\n\n1. PARTIES\nThis agreement is between [Service Provider] and [Client].\n\n2. SERVICES\nThe Service Provider will provide the following services: [Describe services].\n\n3. FEES AND PAYMENT\nThe Client will pay [amount and payment schedule].\n\n4. TERM AND TERMINATION\nThis agreement begins on [date] and may be terminated by either party on [notice period] written notice.\n\n5. GENERAL\nThis agreement is governed by the laws of the Republic of South Africa.`,
-  nda: `NON-DISCLOSURE AGREEMENT\n\n1. PARTIES\nThis agreement is between [Disclosing Party] and [Receiving Party].\n\n2. CONFIDENTIAL INFORMATION\nConfidential information includes information disclosed for [purpose], whether written, electronic or oral.\n\n3. OBLIGATIONS\nThe Receiving Party must protect the information, use it only for the stated purpose, and not disclose it without written consent.\n\n4. TERM\nThese obligations continue for [period] from the date of disclosure.\n\n5. GENERAL\nThis agreement is governed by the laws of the Republic of South Africa.`,
-  'freelance-agreement': `FREELANCE AGREEMENT\n\n1. PARTIES\nThis agreement is between [Client] and [Freelancer].\n\n2. SCOPE AND DELIVERABLES\nThe Freelancer will deliver: [Describe work and milestones].\n\n3. FEES\nThe Client will pay [amount], due [payment terms].\n\n4. INTELLECTUAL PROPERTY\nOwnership and permitted use of deliverables: [Specify terms].\n\n5. TERM AND TERMINATION\nWork begins [date]. Either party may terminate on [notice period] written notice.\n\n6. GENERAL\nThis agreement is governed by the laws of the Republic of South Africa.`
-};
+import { contractTemplateGroups, contractTemplates } from '../data/contractTemplates';
 const statusClass = (status) => `status status-${status}`;
 function PageTitle({ eyebrow, title, action }) {
   return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1></div>{action}</div>;
@@ -101,8 +95,16 @@ export function ContractFormPage() {
     } catch (failure) { setError(errorMessage(failure)); }
     finally { setBusy(false); }
   }
-  function selectTemplate(template) { setValues({ ...values, template, body: templates[template] || values.body }); }
-  return <><Link className="back-link" to={id ? `/contracts/${id}` : '/contracts'}><ArrowLeft size={16} /> {id ? 'Back to contract' : 'Back to contracts'}</Link><PageTitle eyebrow={id ? 'EDIT AGREEMENT' : 'NEW AGREEMENT'} title={id ? 'Edit your draft' : 'Create a contract'} /><ErrorAlert error={error} /><form className="panel contract-editor" onSubmit={submit}><label>Contract title<input required maxLength="160" placeholder="e.g. Website design services" value={values.title} onChange={(e) => setValues({ ...values, title: e.target.value })} /></label><label>Start with a South African template<select value={values.template} onChange={(e) => selectTemplate(e.target.value)}><option value="custom">Start from scratch</option><option value="service-agreement">Service agreement</option><option value="nda">Non-disclosure agreement</option><option value="freelance-agreement">Freelance agreement</option></select></label><label>Agreement text<textarea required rows="18" maxLength="100000" placeholder="Write the terms of your agreement here…" value={values.body} onChange={(e) => setValues({ ...values, body: e.target.value })} /></label><div className="editor-help"><ShieldCheck size={17} /> Use clear language and include each party’s obligations, payment terms and applicable dates.</div><div className="editor-actions"><Link className="button secondary" to={id ? `/contracts/${id}` : '/contracts'}>Cancel</Link><button className="button primary" disabled={busy}>{busy ? 'Saving…' : 'Save draft'} <ArrowRight size={16} /></button></div></form></>;
+  function selectTemplate(template) {
+    const selected = contractTemplates[template];
+    setValues({
+      ...values,
+      template,
+      title: values.title || selected.title,
+      body: selected.body || values.body
+    });
+  }
+  return <><Link className="back-link" to={id ? `/contracts/${id}` : '/contracts'}><ArrowLeft size={16} /> {id ? 'Back to contract' : 'Back to contracts'}</Link><PageTitle eyebrow={id ? 'EDIT AGREEMENT' : 'NEW AGREEMENT'} title={id ? 'Edit your draft' : 'Create a contract'} /><ErrorAlert error={error} /><form className="panel contract-editor" onSubmit={submit}><label>Contract title<input required maxLength="160" placeholder="e.g. Website design services" value={values.title} onChange={(e) => setValues({ ...values, title: e.target.value })} /></label><label>Start with a South African template<select value={values.template} onChange={(e) => selectTemplate(e.target.value)}><option value="custom">{contractTemplates.custom.label}</option>{contractTemplateGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.values.map((template) => <option key={template} value={template}>{contractTemplates[template].label}</option>)}</optgroup>)}</select></label><label>Agreement text<textarea required rows="18" maxLength="100000" placeholder="Write the terms of your agreement here…" value={values.body} onChange={(e) => setValues({ ...values, body: e.target.value })} /></label><div className="editor-help"><ShieldCheck size={17} /> Templates are starting points, not legal advice. Review and adapt every clause before signing.</div><div className="editor-actions"><Link className="button secondary" to={id ? `/contracts/${id}` : '/contracts'}>Cancel</Link><button className="button primary" disabled={busy}>{busy ? 'Saving…' : 'Save draft'} <ArrowRight size={16} /></button></div></form></>;
 }
 
 export function ContractDetailPage() {

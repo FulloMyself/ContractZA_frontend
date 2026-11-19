@@ -3,21 +3,15 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import { ProtectedRoute, RoleRoute } from './components/ProtectedRoute';
 import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from './pages/AuthPages';
+import LandingPage from './pages/LandingPage';
 import PublicSignPage from './pages/PublicSignPage';
 import { DashboardPage, ContractsPage, ContractFormPage, ContractDetailPage } from './pages/ContractPages';
 import ProfilePage from './pages/ProfilePage';
 import { AdminDashboardPage, AdminUsersPage, AdminAuditPage } from './pages/AdminPages';
 
-function HomeRedirect() {
-  const { user, loading, authError } = useAuth();
-  if (loading) return <div className="loading-screen"><span className="spinner" />Loading…</div>;
-  if (authError) return <div className="sign-error"><h1>Unable to connect</h1><p>{authError}</p><button className="button primary" onClick={() => window.location.reload()}>Try again</button></div>;
-  return <Navigate to={user ? (user.role === 'admin' ? '/admin' : '/dashboard') : '/login'} replace />;
-}
-
 function RouterContent() {
   return <Routes>
-    <Route path="/" element={<HomeRedirect />} />
+    <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -41,7 +35,7 @@ function RouterContent() {
         </Route>
       </Route>
     </Route>
-    <Route path="*" element={<HomeRedirect />} />
+    <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>;
 }
 
