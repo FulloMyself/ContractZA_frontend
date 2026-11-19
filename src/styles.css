@@ -85,6 +85,10 @@ tbody tr:last-child td { border-bottom: 0; }
 .table-title { color: #253d33; font-size: 11px; font-weight: 600; }
 .table-title:hover { text-decoration: underline; }
 .table-subtitle { display: block; padding-top: 3px; color: #88948e; font-size: 10px; }
+.admin-user-details { min-width: 190px; max-width: 300px; white-space: normal; overflow-wrap: anywhere; }
+.admin-user-details span, .admin-user-details small { display: block; line-height: 1.55; }
+.admin-user-details span { color: #586b60; font-size: 10px; }
+.admin-user-details small { padding-top: 3px; color: #88948e; font-size: 9px; }
 .status { display: inline-flex; align-items: center; border-radius: 99px; padding: 5px 9px; color: #66746d; background: #f1f3f1; font-size: 9px; font-weight: 700; text-transform: capitalize; }
 .status-signed, .status-active { color: #28674e; background: #e7f4e9; }
 .status-pending { color: #966c1e; background: #fff4d8; }
@@ -149,6 +153,10 @@ label small { display: block; margin-top: 5px; color: #8b9690; font-size: 9px; f
 .alert { margin-bottom: 12px; border: 1px solid transparent; border-radius: 6px; padding: 10px 12px; font-size: 10px; line-height: 1.5; }
 .alert.error { border-color: #f0d7d2; color: #9b463d; background: #fff5f3; }
 .alert.success { border-color: #d7e8d8; color: #30674d; background: #f2f8f1; }
+.profile-completion-toast { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 16px; border: 1px solid #e8dfb8; border-radius: 8px; padding: 13px 15px; color: #79642b; background: #fffaf0; }
+.profile-completion-toast > svg { flex: 0 0 auto; margin-top: 1px; }
+.profile-completion-toast p { margin: 0; color: #716442; font-size: 10px; line-height: 1.65; }
+.profile-completion-toast strong { color: #5b4b22; }
 .back-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; color: #66766e; font-size: 10px; }
 .back-link:hover { color: #214f40; }
 .contract-editor { display: grid; gap: 17px; }

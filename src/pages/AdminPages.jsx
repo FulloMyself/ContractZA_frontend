@@ -5,6 +5,12 @@ import api, { errorMessage } from '../api/client';
 
 function Heading({ title, subtitle }) { return <div className="page-title"><div><div className="eyebrow">ADMINISTRATION</div><h1>{title}</h1>{subtitle && <p className="muted">{subtitle}</p>}</div></div>; }
 
+function formatAddress(address) {
+  if (!address) return 'Not provided';
+  return [address.street, address.unit, address.suburb, address.city, address.province, address.postalCode]
+    .filter(Boolean).join(', ') || 'Not provided';
+}
+
 export function AdminDashboardPage() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
@@ -62,15 +68,17 @@ export function AdminUsersPage() {
     {error && <div className="alert error">{error}</div>}
     <section className="panel">
       <div className="panel-heading">
-        <div><h2>Accounts</h2><p>Search by name or email. Contract content is not visible.</p></div>
+        <div><h2>Accounts</h2><p>Contact details are for account administration. Contract content and full ID numbers are not visible.</p></div>
         <form className="admin-search" onSubmit={searchUsers}>
           <div className="search-field"><Search size={16} /><input placeholder="Find a user" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         </form>
       </div>
       <div className="table-scroll"><table>
-        <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+        <thead><tr><th>User</th><th>Contact</th><th>Address</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
         <tbody>{users.map((user) => <tr key={user._id}>
-          <td><strong className="table-title">{user.firstName} {user.lastName}</strong><small className="table-subtitle">{user.email}</small></td>
+          <td><strong className="table-title">{user.firstName} {user.lastName}</strong></td>
+          <td className="admin-user-details"><span>{user.email}</span><small>Mobile: {user.mobile || 'Not provided'}</small><small>Alternative: {user.alternatePhone || 'Not provided'}</small></td>
+          <td className="admin-user-details"><small>Residential: {formatAddress(user.residentialAddress)}</small><small>Postal: {user.postalSameAsResidential !== false ? 'Same as residential' : formatAddress(user.postalAddress)}</small></td>
           <td>{user.role}</td><td><span className={`status status-${user.status}`}>{user.status}</span></td>
           <td>{new Date(user.createdAt).toLocaleDateString('en-ZA')}</td>
           <td>{user.role !== 'admin' && <div className="user-actions">

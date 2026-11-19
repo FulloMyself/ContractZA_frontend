@@ -1,5 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FileText, LayoutDashboard, LogOut, Settings, Shield, Plus, Menu, X, MessageSquareWarning } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { FileText, LayoutDashboard, LogOut, Settings, Shield, Plus, Menu, X, MessageSquareWarning, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,6 +7,7 @@ export default function Layout() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   async function signOut() {
     await logout();
     navigate('/login');
@@ -32,7 +33,14 @@ export default function Layout() {
       {open && <button aria-label="Close menu" className="mobile-backdrop" onClick={() => setOpen(false)} />}
       <main className="main-area">
         <header className="topbar"><button className="mobile-menu" aria-label="Toggle menu" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button><span className="topbar-caption">Agreements, made clear.</span><div className="topbar-user">{user?.firstName} {user?.lastName}<span className="avatar small">{user?.firstName?.[0]}{user?.lastName?.[0]}</span></div></header>
-        <div className="page-content"><Outlet /></div>
+        <div className="page-content">
+          {location.pathname === '/profile' && <div className="profile-completion-toast" role="status">
+            <ShieldCheck size={19} />
+            <p><strong>Keep your profile complete for contract engagement.</strong><br />
+              Make sure your full name, verified email, phone numbers and residential or postal address are accurate and up to date. If required information is missing, an administrator may suspend the account after review; this is not automatic. Admins can view these contact details in the user dashboard, while national ID numbers remain masked.</p>
+          </div>}
+          <Outlet />
+        </div>
         <footer className="app-footer">Contracts ZAR <span>Simple electronic signatures. Keep important agreements in one place.</span></footer>
       </main>
     </div>
