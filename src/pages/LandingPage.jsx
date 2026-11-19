@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, FileCheck2, FileText, LockKeyhole, PenLine, ShieldCheck, UsersRound } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, Check, FileCheck2, FileText, LockKeyhole, MessageSquareWarning, PenLine, ShieldCheck, UsersRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contractTemplateGroups, contractTemplates } from '../data/contractTemplates';
@@ -21,6 +21,7 @@ export default function LandingPage() {
       <nav aria-label="Main navigation">
         <a href="#how-it-works" onClick={(event) => scrollToSection(event, 'how-it-works')}>How it works</a>
         <a href="#templates" onClick={(event) => scrollToSection(event, 'templates')}>Templates</a>
+        <a href="#support" onClick={(event) => scrollToSection(event, 'support')}>Dispute support</a>
         <a href="#about" onClick={(event) => scrollToSection(event, 'about')}>About</a>
       </nav>
       <div className="marketing-nav-actions">
@@ -100,6 +101,31 @@ export default function LandingPage() {
           <span><FileCheck2 size={17} /> A completion record you can download</span>
         </div>
       </div>
+    </section>
+
+    <section id="support" className="marketing-section marketing-support">
+      <div className="marketing-section-heading">
+        <div><div className="marketing-kicker">SUPPORT WHEN A CONCERN COMES UP</div><h2>A place to raise concerns. A platform that stays neutral.</h2></div>
+        <p>Keep the agreement and its signatories connected through a clear digital workflow, from sharing and signing to securely retaining the completed contract.</p>
+      </div>
+      <div className="marketing-feature-grid">
+        <article className="marketing-feature">
+          <span className="marketing-feature-icon"><MessageSquareWarning size={21} /></span>
+          <h3>Raise a contract concern</h3>
+          <p>Contract parties can submit a complaint about an agreement, choose an issue category and explain the concern in a dedicated case.</p>
+        </article>
+        <article className="marketing-feature">
+          <span className="marketing-feature-icon"><UsersRound size={21} /></span>
+          <h3>Keep communication together</h3>
+          <p>The parties and platform administrators can view case submissions and written responses, and follow the case status in the workspace.</p>
+        </article>
+        <article className="marketing-feature">
+          <span className="marketing-feature-icon"><ShieldCheck size={21} /></span>
+          <h3>Privacy and neutrality matter</h3>
+          <p>Administrators cannot open or read client contract documents or terms. They may review information parties submit to a complaint case, but do not decide whether a breach occurred, take a legal stance or provide legal advice.</p>
+        </article>
+      </div>
+      <p className="marketing-support-disclaimer">Contracts ZAR helps people create, digitally share, sign and retain agreements in an access-controlled workspace. Complaint support is for recording concerns and facilitating communication only; it is not legal representation, mediation or a determination of anyone’s legal rights.</p>
     </section>
 
     <section id="templates" className="marketing-section marketing-templates">
