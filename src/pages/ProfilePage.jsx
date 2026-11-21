@@ -41,7 +41,7 @@ export default function ProfilePage() {
         preferredLanguage: profile.preferredLanguage, timezone: profile.timezone, notifications: profile.notifications
       });
       setProfile({ ...profile, ...data.user });
-      setUser((current) => ({ ...current, email: data.user.email }));
+      setUser((current) => ({ ...current, ...data.user }));
       setMessage(data.message);
     } catch (failure) { setError(errorMessage(failure)); }
     finally { setBusy(false); }
