@@ -91,7 +91,7 @@ export default function Layout() {
       <main className="main-area">
         <header className="topbar"><button className="mobile-menu" aria-label="Toggle menu" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button><span className="topbar-caption">Agreements, made clear.</span><div className="topbar-user">{user?.firstName} {user?.lastName}<span className="avatar small">{user?.firstName?.[0]}{user?.lastName?.[0]}</span></div></header>
         <div className="page-content">
-          {location.pathname === '/profile' && <div className="profile-completion-toast" role="status">
+          {location.pathname === '/profile' && (!profileLoaded || profileError || missingProfileDetails > 0) && <div className="profile-completion-toast" role="status">
             <ShieldCheck size={19} />
             <p><strong>Keep your profile complete for contract engagement.</strong><br />
               Make sure your full name, verified email, phone numbers and residential or postal address are accurate and up to date. If required information is missing, an administrator may suspend the account after review; this is not automatic. Admins can view these contact details in the user dashboard, while national ID numbers remain masked.</p>
