@@ -29,6 +29,10 @@ button { cursor: pointer; }
 .nav-link:hover { color: white; background: rgba(255,255,255,.07); }
 .nav-link.active { color: #f7fff0; background: rgba(201,239,116,.13); box-shadow: inset 3px 0 var(--lime); }
 .nav-link.active svg { color: var(--lime); }
+.nav-counts { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.nav-count { min-width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 99px; padding: 0 6px; color: #19372c; background: #d3ec9d; font-size: 9px; font-weight: 800; line-height: 1; }
+.nav-count-awaiting { color: #5e451a; background: #f4d28a; }
+.nav-count-error { margin: 10px 8px 0; color: #efb4a9; font-size: 9px; line-height: 1.5; overflow-wrap: anywhere; }
 .sidebar-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); }
 .user-chip { display: flex; align-items: center; gap: 10px; padding: 5px 6px 15px; }
 .user-chip strong, .user-chip small { display: block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -479,7 +483,7 @@ label small { display: block; margin-top: 5px; color: #8b9690; font-size: 9px; f
   .template-categories { grid-template-columns: 1fr; }
   .template-disclaimer { grid-column: auto; }
 }
-.admin-overview-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.admin-overview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .admin-overview-grid .stat-card { min-width: 0; padding-right: 14px; padding-left: 14px; }
 .admin-overview-grid .stat-label { padding-right: 17px; }
 .complaint-workspace { display: grid; grid-template-columns: minmax(260px, .75fr) minmax(0, 1.6fr); gap: 16px; align-items: start; }
@@ -533,7 +537,7 @@ label small { display: block; margin-top: 5px; color: #8b9690; font-size: 9px; f
 .complaint-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
 @media (max-width: 1050px) {
-  .admin-overview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .admin-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   .complaint-workspace { grid-template-columns: 1fr; }

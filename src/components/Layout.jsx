@@ -1,20 +1,47 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { FileText, LayoutDashboard, LogOut, Settings, Shield, Plus, Menu, X, MessageSquareWarning, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import api, { errorMessage } from '../api/client';
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [counts, setCounts] = useState(null);
+  const [countError, setCountError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const isAdmin = user?.role === 'admin';
+  useEffect(() => {
+    let active = true;
+    const endpoint = isAdmin ? '/admin/stats' : '/contracts/stats';
+    async function loadCounts() {
+      try {
+        const { data } = await api.get(endpoint);
+        if (active) {
+          setCounts(data);
+          setCountError('');
+        }
+      } catch (failure) {
+        if (active) setCountError(errorMessage(failure));
+      }
+    }
+    setCounts(null);
+    const refreshTimeout = window.setTimeout(loadCounts, 500);
+    const interval = window.setInterval(loadCounts, 60_000);
+    return () => {
+      active = false;
+      window.clearTimeout(refreshTimeout);
+      window.clearInterval(interval);
+    };
+  }, [isAdmin, location.pathname]);
   async function signOut() {
     await logout();
     navigate('/login');
   }
-  const links = user?.role === 'admin'
-    ? [{ to: '/admin', label: 'Overview', icon: LayoutDashboard }, { to: '/admin/complaints', label: 'Complaints', icon: MessageSquareWarning }, { to: '/admin/users', label: 'Users', icon: Shield }, { to: '/admin/audit', label: 'Audit log', icon: FileText }, { to: '/profile', label: 'Profile settings', icon: Settings }]
-    : [{ to: '/dashboard', label: 'Overview', icon: LayoutDashboard }, { to: '/contracts', label: 'My contracts', icon: FileText }, { to: '/complaints', label: 'Complaints', icon: MessageSquareWarning }, { to: '/contracts/new', label: 'New contract', icon: Plus }, { to: '/profile', label: 'Profile settings', icon: Settings }];
+  const links = isAdmin
+    ? [{ to: '/admin', label: 'Overview', icon: LayoutDashboard }, { to: '/admin/complaints', label: 'Complaints', icon: MessageSquareWarning, unread: counts?.unreadComplaints, awaiting: counts?.awaitingResponseComplaints }, { to: '/admin/users', label: 'Users', icon: Shield }, { to: '/admin/audit', label: 'Audit log', icon: FileText }, { to: '/profile', label: 'Profile settings', icon: Settings }]
+    : [{ to: '/dashboard', label: 'Overview', icon: LayoutDashboard }, { to: '/contracts', label: 'My contracts', icon: FileText, unread: counts?.unreadContracts }, { to: '/complaints', label: 'Complaints', icon: MessageSquareWarning, unread: counts?.unreadComplaints, awaiting: counts?.awaitingResponseComplaints }, { to: '/contracts/new', label: 'New contract', icon: Plus }, { to: '/profile', label: 'Profile settings', icon: Settings }];
   return (
     <div className="app-shell">
       <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
@@ -23,8 +50,15 @@ export default function Layout() {
         </NavLink>
         <div className="workspace-label">WORKSPACE</div>
         <nav className="side-nav">
-          {links.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === '/dashboard' || to === '/admin'} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}><Icon size={18} /><span>{label}</span></NavLink>)}
+          {links.map(({ to, label, icon: Icon, unread, awaiting }) => <NavLink key={to} to={to} end={to === '/dashboard' || to === '/admin'} onClick={() => setOpen(false)} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} aria-label={`${label}${unread ? `, ${unread} unread` : ''}${awaiting ? `, ${awaiting} awaiting your response` : ''}`}>
+            <Icon size={18} /><span>{label}</span>
+            {(unread > 0 || awaiting > 0) && <span className="nav-counts">
+              {unread > 0 && <span className="nav-count" title={`${unread} unread`}>{unread}</span>}
+              {awaiting > 0 && <span className="nav-count nav-count-awaiting" title={`${awaiting} awaiting your response`}>{awaiting}</span>}
+            </span>}
+          </NavLink>)}
         </nav>
+        {countError && <p className="nav-count-error" role="status">Workspace counts unavailable: {countError}</p>}
         <div className="sidebar-bottom">
           <div className="user-chip"><div className="avatar">{user?.firstName?.[0]}{user?.lastName?.[0]}</div><div><strong>{user?.firstName} {user?.lastName}</strong><small>{user?.role === 'admin' ? 'Administrator' : user?.email}</small></div></div>
           <button className="nav-link signout" onClick={signOut}><LogOut size={18} /><span>Sign out</span></button>
