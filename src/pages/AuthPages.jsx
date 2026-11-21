@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { validateSAId } from '../utils/saId';
+import { safeReturnTo } from '../utils/returnTo';
 import PasswordInput from '../components/PasswordInput';
 
 function AuthShell({ eyebrow = 'CONTRACTS ZAR', title, subtitle, children }) {
@@ -19,7 +20,7 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const returnTo = /^\/sign\/[a-f\d]{64}$/i.test(location.state?.returnTo || '') ? location.state.returnTo : '';
+  const returnTo = safeReturnTo(location.state?.returnTo);
   const invitedEmail = location.state?.invitedEmail || '';
   const [values, setValues] = useState({ email: invitedEmail, password: '' });
   const [error, setError] = useState('');
@@ -41,7 +42,7 @@ export function LoginPage() {
 
 export function RegisterPage() {
   const location = useLocation();
-  const returnTo = /^\/sign\/[a-f\d]{64}$/i.test(location.state?.returnTo || '') ? location.state.returnTo : '';
+  const returnTo = safeReturnTo(location.state?.returnTo);
   const invitedEmail = location.state?.invitedEmail || '';
   const [values, setValues] = useState({ firstName: '', lastName: '', email: invitedEmail, idNumber: '', password: '' });
   const [error, setError] = useState('');
@@ -79,7 +80,7 @@ export function ResetPasswordPage() {
 export function VerifyEmailPage() {
   const [params] = useSearchParams();
   const requestedReturnTo = params.get('returnTo') || '';
-  const returnTo = /^\/sign\/[a-f\d]{64}$/i.test(requestedReturnTo) ? requestedReturnTo : '';
+  const returnTo = safeReturnTo(requestedReturnTo);
   const started = useRef(false);
   const [state, setState] = useState({ loading: true, message: '', error: '' });
   useEffect(() => {

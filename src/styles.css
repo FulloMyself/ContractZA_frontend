@@ -88,6 +88,16 @@ button { cursor: pointer; }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 18px; }
 .panel h2, .panel-heading h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 14px; letter-spacing: -.25px; }
 .panel-heading p { margin: 5px 0 0; color: #87928c; font-size: 10px; }
+.upcoming-deadlines-panel .panel-heading > svg { color: #6b8c77; }
+.deadline-list { display: grid; }
+.deadline-row { display: flex; align-items: center; gap: 11px; border-top: 1px solid #eff2ef; padding: 11px 2px; }
+.deadline-row:hover .deadline-info strong { color: #28674e; }
+.deadline-icon { width: 31px; height: 31px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 8px; color: #4a7557; background: #edf4e9; }
+.deadline-info { min-width: 0; flex: 1; }
+.deadline-info strong, .deadline-info small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deadline-info strong { color: #34463d; font-size: 10px; }
+.deadline-info small { padding-top: 3px; color: #87938c; font-size: 9px; text-transform: capitalize; }
+.deadline-row time { flex: 0 0 auto; color: #617168; font-size: 9px; white-space: nowrap; }
 .table-scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th { padding: 10px 12px; border-bottom: 1px solid #edf0ed; color: #8a9690; font-size: 9px; font-weight: 600; letter-spacing: .55px; text-transform: uppercase; white-space: nowrap; }
@@ -199,6 +209,21 @@ label small { display: block; margin-top: 5px; color: #8b9690; font-size: 9px; f
 .party-state.complete { color: #34704d; }
 .invite-form { display: grid; gap: 11px; margin-top: 12px; padding-top: 13px; border-top: 1px solid #edf0ed; }
 .invite-form h3, .settings-panel h3 { margin: 0; color: #405248; font-size: 11px; }
+.reminder-panel .panel-heading { margin-bottom: 13px; }
+.reminder-panel .panel-heading > svg { flex: 0 0 auto; color: #6b8c77; }
+.reminder-settings-form { display: grid; gap: 12px; }
+.reminder-settings-form > label:not(.check-label) { display: grid; gap: 6px; color: #64736a; font-size: 9px; font-weight: 600; }
+.reminder-settings-form .optional { margin-left: 4px; }
+.reminder-settings-form input[type="date"] { width: 100%; }
+.reminder-day-options { display: grid; gap: 2px; margin: 0; border: 1px solid #e8ede8; border-radius: 7px; padding: 8px 10px 11px; }
+.reminder-day-options legend { padding: 0 4px; color: #65756b; font-size: 9px; font-weight: 600; }
+.reminder-day-options .check-label { margin-top: 6px; }
+.reminder-settings-form .check-label { margin-top: 0; line-height: 1.5; }
+.reminder-settings-form .check-label input { flex: 0 0 auto; }
+.reminder-recipients { color: #87938c; font-size: 9px; line-height: 1.6; }
+.reminder-readonly p { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #eff2ef; padding: 10px 0; color: #65756b; font-size: 9px; }
+.reminder-readonly p:first-child { border-top: 0; }
+.reminder-readonly p strong { color: #34463d; }
 .top-space { margin-top: 12px; }
 .signature-wrap { overflow: hidden; border: 1px solid #dfe5df; border-radius: 7px; background: linear-gradient(#fff 0%, #fff 96%, #f5f7f5 96%); }
 .signature-wrap canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 1; touch-action: none; cursor: crosshair; }
