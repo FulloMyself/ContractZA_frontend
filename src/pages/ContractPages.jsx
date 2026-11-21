@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, Copy, Download, FileText, Plus, Search, Send, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Copy, Download, FileText, MessageSquareWarning, Plus, Search, Send, ShieldCheck } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import SignaturePad from '../components/SignaturePad';
 import { useAuth } from '../context/AuthContext';
@@ -22,9 +22,22 @@ function Pagination({ page, pages, onChange }) {
 export function DashboardPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
-  useEffect(() => { api.get('/contracts/stats').then(({ data: result }) => setData(result)).catch((failure) => setError(errorMessage(failure))); }, []);
+  useEffect(() => {
+    let active = true;
+    async function loadStats() {
+      try {
+        const { data: result } = await api.get('/contracts/stats');
+        if (active) { setData(result); setError(''); }
+      } catch (failure) {
+        if (active) setError(errorMessage(failure));
+      }
+    }
+    loadStats();
+    const interval = window.setInterval(loadStats, 60_000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
   const stats = data?.stats || {};
-  return <><PageTitle eyebrow="YOUR WORKSPACE" title="Good to see you." action={<Link className="button primary" to="/contracts/new"><Plus size={17} /> New contract</Link>} /><ErrorAlert error={error} /><div className="stat-grid"><div className="stat-card"><span className="stat-label">Total agreements</span><strong>{Object.values(stats).reduce((sum, value) => sum + value, 0)}</strong><small>Across all statuses</small></div><div className="stat-card"><span className="stat-label">Awaiting signatures</span><strong>{stats.pending || 0}</strong><small>Contracts in progress</small></div><div className="stat-card"><span className="stat-label">Completed</span><strong>{stats.signed || 0}</strong><small>Fully signed agreements</small></div><div className="stat-card"><span className="stat-label">Drafts</span><strong>{stats.draft || 0}</strong><small>Ready when you are</small></div></div><section className="panel"><div className="panel-heading"><div><h2>Recent agreements</h2><p>Your latest contract activity</p></div><Link className="text-link" to="/contracts">View all <ArrowRight size={15} /></Link></div>{data?.recent?.length ? <div className="table-scroll"><table><thead><tr><th>Contract</th><th>Status</th><th>Updated</th><th /></tr></thead><tbody>{data.recent.map((item) => <tr key={item._id}><td><Link className="table-title" to={`/contracts/${item._id}`}>{item.title}</Link></td><td><span className={statusClass(item.status)}>{item.status}</span></td><td>{new Date(item.updatedAt).toLocaleDateString('en-ZA')}</td><td><Link className="icon-link" to={`/contracts/${item._id}`} aria-label={`Open ${item.title}`}><ArrowRight size={17} /></Link></td></tr>)}</tbody></table></div> : <div className="empty-state"><div className="empty-icon"><FileText /></div><h3>Your next agreement starts here</h3><p>Create a contract, invite the other party and sign securely online.</p><Link className="button primary" to="/contracts/new">Create a contract <ArrowRight size={16} /></Link></div>}</section><div className="compliance-note"><ShieldCheck size={19} /><p><strong>A note on electronic signatures</strong><br />Some South African documents require additional formalities or an advanced electronic signature. Review your document requirements before signing.</p></div></>;
+  return <><PageTitle eyebrow="YOUR WORKSPACE" title="Good to see you." action={<Link className="button primary" to="/contracts/new"><Plus size={17} /> New contract</Link>} /><ErrorAlert error={error} /><div className="stat-grid dashboard-stat-grid"><div className="stat-card"><span className="stat-label">Total agreements</span><strong>{Object.values(stats).reduce((sum, value) => sum + value, 0)}</strong><small>Across all statuses</small></div><div className="stat-card"><span className="stat-label">Awaiting signatures</span><strong>{stats.pending || 0}</strong><small>Contracts in progress</small></div><div className="stat-card"><span className="stat-label">Completed</span><strong>{stats.signed || 0}</strong><small>Fully signed agreements</small></div><div className="stat-card"><span className="stat-label">Drafts</span><strong>{stats.draft || 0}</strong><small>Ready when you are</small></div><Link className="stat-card unread-stat-card" to="/contracts"><span className="stat-icon"><FileText size={18} /></span><span className="stat-label">Unread contracts</span><strong>{data?.unreadContracts || 0}</strong><small>Open a contract to mark it read</small></Link><Link className="stat-card unread-stat-card" to="/complaints"><span className="stat-icon"><MessageSquareWarning size={18} /></span><span className="stat-label">Unread complaints</span><strong>{data?.unreadComplaints || 0}</strong><small>Open a case to mark it read</small></Link></div><section className="panel"><div className="panel-heading"><div><h2>Recent agreements</h2><p>Your latest contract activity</p></div><Link className="text-link" to="/contracts">View all <ArrowRight size={15} /></Link></div>{data?.recent?.length ? <div className="table-scroll"><table><thead><tr><th>Contract</th><th>Status</th><th>Updated</th><th /></tr></thead><tbody>{data.recent.map((item) => <tr key={item._id}><td><Link className="table-title" to={`/contracts/${item._id}`}>{item.title}</Link></td><td><span className={statusClass(item.status)}>{item.status}</span></td><td>{new Date(item.updatedAt).toLocaleDateString('en-ZA')}</td><td><Link className="icon-link" to={`/contracts/${item._id}`} aria-label={`Open ${item.title}`}><ArrowRight size={17} /></Link></td></tr>)}</tbody></table></div> : <div className="empty-state"><div className="empty-icon"><FileText /></div><h3>Your next agreement starts here</h3><p>Create a contract, invite the other party and sign securely online.</p><Link className="button primary" to="/contracts/new">Create a contract <ArrowRight size={16} /></Link></div>}</section><div className="compliance-note"><ShieldCheck size={19} /><p><strong>A note on electronic signatures</strong><br />Some South African documents require additional formalities or an advanced electronic signature. Review your document requirements before signing.</p></div></>;
 }
 
 export function ContractsPage() {

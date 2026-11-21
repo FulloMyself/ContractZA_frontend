@@ -14,10 +14,23 @@ function formatAddress(address) {
 export function AdminDashboardPage() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
-  useEffect(() => { api.get('/admin/stats').then(({ data }) => setStats(data)).catch((failure) => setError(errorMessage(failure))); }, []);
+  useEffect(() => {
+    let active = true;
+    async function loadStats() {
+      try {
+        const { data } = await api.get('/admin/stats');
+        if (active) { setStats(data); setError(''); }
+      } catch (failure) {
+        if (active) setError(errorMessage(failure));
+      }
+    }
+    loadStats();
+    const interval = window.setInterval(loadStats, 60_000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
   const userTotal = stats ? Object.values(stats.users).reduce((sum, item) => sum + item, 0) : 0;
   const contractTotal = stats ? Object.values(stats.contracts).reduce((sum, item) => sum + item, 0) : 0;
-  return <><Heading title="Platform overview" subtitle="A privacy-first view of platform activity." />{error && <div className="alert error">{error}</div>}<div className="stat-grid admin-overview-grid"><div className="stat-card"><span className="stat-icon"><Users size={18} /></span><span className="stat-label">Total users</span><strong>{userTotal}</strong><small>{stats?.users?.active || 0} active accounts</small></div><div className="stat-card"><span className="stat-icon"><FileText size={18} /></span><span className="stat-label">Contracts</span><strong>{contractTotal}</strong><small>Metadata only</small></div><div className="stat-card"><span className="stat-icon"><MessageSquareWarning size={18} /></span><span className="stat-label">Open complaints</span><strong>{stats?.openComplaints || 0}</strong><small><Link className="text-link" to="/admin/complaints">Review case queue</Link></small></div><div className="stat-card"><span className="stat-icon"><ShieldCheck size={18} /></span><span className="stat-label">Correction requests</span><strong>{stats?.pendingCorrections || 0}</strong><small>Awaiting review</small></div><div className="stat-card"><span className="stat-icon"><Activity size={18} /></span><span className="stat-label">Recent activity</span><strong>{stats?.recentActivity || 0}</strong><small>Audit events in 24 hours</small></div></div><div className="compliance-note"><ShieldCheck size={19} /><p><strong>Privacy by design</strong><br />Contract documents are not exposed in the admin dashboard. The complaints workspace contains only case details and messages submitted for platform support.</p></div></>;
+  return <><Heading title="Platform overview" subtitle="A privacy-first view of platform activity." />{error && <div className="alert error">{error}</div>}<div className="stat-grid admin-overview-grid"><div className="stat-card"><span className="stat-icon"><Users size={18} /></span><span className="stat-label">Total users</span><strong>{userTotal}</strong><small>{stats?.users?.active || 0} active accounts</small></div><div className="stat-card"><span className="stat-icon"><FileText size={18} /></span><span className="stat-label">Contracts</span><strong>{contractTotal}</strong><small>Metadata only</small></div><div className="stat-card"><span className="stat-icon"><MessageSquareWarning size={18} /></span><span className="stat-label">Open complaints</span><strong>{stats?.openComplaints || 0}</strong><small><Link className="text-link" to="/admin/complaints">Unread: {stats?.unreadComplaints || 0} · Review case queue</Link></small></div><div className="stat-card"><span className="stat-icon"><ShieldCheck size={18} /></span><span className="stat-label">Correction requests</span><strong>{stats?.pendingCorrections || 0}</strong><small>Awaiting review</small></div><div className="stat-card"><span className="stat-icon"><Activity size={18} /></span><span className="stat-label">Recent activity</span><strong>{stats?.recentActivity || 0}</strong><small>Audit events in 24 hours</small></div></div><div className="compliance-note"><ShieldCheck size={19} /><p><strong>Privacy by design</strong><br />Contract documents are not exposed in the admin dashboard. The complaints workspace contains only case details and messages submitted for platform support.</p></div></>;
 }
 
 export function AdminUsersPage() {
