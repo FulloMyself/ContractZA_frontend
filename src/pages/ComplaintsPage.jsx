@@ -50,6 +50,7 @@ function ComplaintsWorkspace({ admin }) {
   const [total, setTotal] = useState(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [notificationWarning, setNotificationWarning] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -94,9 +95,11 @@ function ComplaintsWorkspace({ admin }) {
     if (!message.trim()) return;
     setBusy(true);
     setError('');
+    setNotificationWarning('');
     try {
       const { data } = await api.post(`${admin ? '/admin/complaints' : '/complaints'}/${id}/messages`, { body: message });
       setCaseRecord(data.case);
+      setNotificationWarning(data.notificationWarning || '');
       setMessage('');
       await loadCases();
     } catch (failure) {
@@ -127,9 +130,10 @@ function ComplaintsWorkspace({ admin }) {
 
   return <>
     <PageHeading admin={admin} />
-    <div className="complaint-privacy-note"><ShieldCheck size={18} /><p><strong>Neutral platform support</strong><br />Contracts ZAR records the report and helps the parties communicate. Administrators do not decide whether a contract was breached and cannot provide legal advice. Do not post bank details, ID numbers, passwords or unnecessary sensitive information. Case updates are available here after sign-in; email notifications are sent when a case is opened.</p></div>
+    <div className="complaint-privacy-note"><ShieldCheck size={18} /><p><strong>Neutral platform support</strong><br />Contracts ZAR records the report and helps the parties communicate. Administrators do not decide whether a contract was breached and cannot provide legal advice. Do not post bank details, ID numbers, passwords or unnecessary sensitive information. Email notifications are sent when a case is opened or a response is added; the response text is not included in notification emails.</p></div>
     {location.state?.notificationWarning && <div className="alert error">{location.state.notificationWarning}</div>}
     {error && <div className="alert error">{error}</div>}
+    {notificationWarning && <div className="alert error" role="status">{notificationWarning}</div>}
     <div className="complaint-workspace">
       <section className="panel complaint-inbox">
         <div className="panel-heading"><div><h2>{admin ? 'Case queue' : 'Cases involving you'}</h2><p>{total} case{total === 1 ? '' : 's'}</p></div>
