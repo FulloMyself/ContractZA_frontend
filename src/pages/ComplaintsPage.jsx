@@ -112,9 +112,11 @@ function ComplaintsWorkspace({ admin }) {
   async function updateStatus(nextStatus) {
     setBusy(true);
     setError('');
+    setNotificationWarning('');
     try {
       const { data } = await api.patch(`/admin/complaints/${id}/status`, { status: nextStatus });
       setCaseRecord(data.case);
+      setNotificationWarning(data.notificationWarning || '');
       await loadCases();
     } catch (failure) {
       setError(errorMessage(failure));

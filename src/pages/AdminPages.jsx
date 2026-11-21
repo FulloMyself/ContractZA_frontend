@@ -40,6 +40,7 @@ export function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [error, setError] = useState('');
+  const [notificationWarning, setNotificationWarning] = useState('');
   const [pending, setPending] = useState(null);
   async function load() {
     try {
@@ -53,8 +54,12 @@ export function AdminUsersPage() {
   }
   useEffect(() => { load(); }, [page]);
   async function setStatus(user, status) {
-    setPending(user._id); setError('');
-    try { await api.patch(`/admin/users/${user._id}/status`, { status }); await load(); }
+    setPending(user._id); setError(''); setNotificationWarning('');
+    try {
+      const { data } = await api.patch(`/admin/users/${user._id}/status`, { status });
+      setNotificationWarning(data.notificationWarning || '');
+      await load();
+    }
     catch (failure) { setError(errorMessage(failure)); }
     finally { setPending(null); }
   }
@@ -66,8 +71,12 @@ export function AdminUsersPage() {
     finally { setPending(null); }
   }
   async function review(request, decision) {
-    setPending(String(request._id)); setError('');
-    try { await api.patch(`/admin/correction-requests/${request._id}`, { decision }); await load(); }
+    setPending(String(request._id)); setError(''); setNotificationWarning('');
+    try {
+      const { data } = await api.patch(`/admin/correction-requests/${request._id}`, { decision });
+      setNotificationWarning(data.notificationWarning || '');
+      await load();
+    }
     catch (failure) { setError(errorMessage(failure)); }
     finally { setPending(null); }
   }
@@ -79,6 +88,7 @@ export function AdminUsersPage() {
   return <>
     <Heading title="Users & corrections" subtitle="Manage accounts and review legal identity correction requests." />
     {error && <div className="alert error">{error}</div>}
+    {notificationWarning && <div className="alert error" role="status">{notificationWarning}</div>}
     <section className="panel">
       <div className="panel-heading">
         <div><h2>Accounts</h2><p>Contact details are for account administration. Contract content and full ID numbers are not visible.</p></div>
