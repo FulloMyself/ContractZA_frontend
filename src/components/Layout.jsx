@@ -6,7 +6,7 @@ import api, { errorMessage } from '../api/client';
 import { getMissingProfileDetails } from '../utils/profileCompletion';
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const [open, setOpen] = useState(false);
   const [counts, setCounts] = useState(null);
   const [countError, setCountError] = useState('');
