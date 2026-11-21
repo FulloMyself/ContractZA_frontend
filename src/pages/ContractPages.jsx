@@ -194,7 +194,7 @@ export function ContractDetailPage() {
     setError('');
     try {
       const { data } = await api.post('/complaints', { ...complaint, contractId: id });
-      navigate(`/complaints/${data.case._id}`);
+      navigate(`/complaints/${data.case._id}`, { state: { notificationWarning: data.notificationWarning } });
     } catch (failure) { setError(errorMessage(failure)); }
     finally { setBusy(false); }
   }

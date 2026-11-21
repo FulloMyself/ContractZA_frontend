@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, MessageSquareWarning, Send, ShieldCheck } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -40,6 +40,7 @@ export function AdminComplaintsPage() {
 
 function ComplaintsWorkspace({ admin }) {
   const { id } = useParams();
+  const location = useLocation();
   const { user } = useAuth();
   const [cases, setCases] = useState([]);
   const [caseRecord, setCaseRecord] = useState(null);
@@ -126,7 +127,8 @@ function ComplaintsWorkspace({ admin }) {
 
   return <>
     <PageHeading admin={admin} />
-    <div className="complaint-privacy-note"><ShieldCheck size={18} /><p><strong>Neutral platform support</strong><br />Contracts ZAR records the report and helps the parties communicate. Administrators do not decide whether a contract was breached and cannot provide legal advice. Do not post bank details, ID numbers, passwords or unnecessary sensitive information. Case updates are available here after sign-in; email notifications are not sent.</p></div>
+    <div className="complaint-privacy-note"><ShieldCheck size={18} /><p><strong>Neutral platform support</strong><br />Contracts ZAR records the report and helps the parties communicate. Administrators do not decide whether a contract was breached and cannot provide legal advice. Do not post bank details, ID numbers, passwords or unnecessary sensitive information. Case updates are available here after sign-in; email notifications are sent when a case is opened.</p></div>
+    {location.state?.notificationWarning && <div className="alert error">{location.state.notificationWarning}</div>}
     {error && <div className="alert error">{error}</div>}
     <div className="complaint-workspace">
       <section className="panel complaint-inbox">

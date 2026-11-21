@@ -43,6 +43,7 @@ export default function ProfilePage() {
       setProfile({ ...profile, ...data.user });
       setUser((current) => ({ ...current, ...data.user }));
       setMessage(data.message);
+      setError(data.notificationWarning || '');
     } catch (failure) { setError(errorMessage(failure)); }
     finally { setBusy(false); }
   }
