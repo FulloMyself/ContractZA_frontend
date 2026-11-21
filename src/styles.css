@@ -114,6 +114,11 @@ tbody tr:last-child td { border-bottom: 0; }
 input, textarea, select { width: 100%; border: 1px solid #dce3dd; border-radius: 6px; padding: 10px 11px; outline: none; color: #233a30; background: #fff; font-size: 11px; transition: border .15s, box-shadow .15s; }
 input:focus, textarea:focus, select:focus { border-color: #6e9a7d; box-shadow: 0 0 0 3px rgba(75,126,91,.1); }
 input::placeholder, textarea::placeholder { color: #a2aaa5; }
+.password-input-wrap { position: relative; display: block; }
+.password-input-wrap > input { padding-right: 42px; }
+.password-visibility-toggle { position: absolute; top: calc(50% + 3px); right: 7px; display: grid; width: 30px; height: 30px; place-items: center; transform: translateY(-50%); border: 0; border-radius: 5px; color: #718078; background: transparent; }
+.password-visibility-toggle:hover { color: #244d3e; background: #f1f5f1; }
+.password-visibility-toggle:focus-visible { outline: 2px solid #6e9a7d; outline-offset: 1px; }
 textarea { resize: vertical; line-height: 1.65; }
 label { display: block; color: #43534b; font-size: 10px; font-weight: 600; }
 label input, label textarea, label select { margin-top: 6px; }
